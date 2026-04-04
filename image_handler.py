@@ -1,8 +1,7 @@
 import PIL
 import yaml
-import os
+from tkinter import messagebox
 import pathlib
-import re
 import filer
 import unit
 import chooser
@@ -66,6 +65,8 @@ def export_img(instance):
 def separate_img(instance):
     global IMAGE, IS_SEPARATED
 
+    array_failed = []
+
     if IMAGE is None:
         if load_image(instance) is None:
             instance.label_status.configure(text="[x] 画像の読み込みに失敗しました。")
@@ -88,10 +89,21 @@ def separate_img(instance):
             path_out = pathlib.Path(
                 pathlib.Path(pathlib.Path(__file__).parent, "tmp"),
                 i.replace(".asset", ".png"))
-            img_cropped.save(path_out)
+            try:
+                img_cropped.save(path_out)
+            except Exception as e:
+                print(e)
+                print("{}: x{}, y{}, w{}, h{}".format(i, crop_pos['x'], crop_pos['y'], crop_pos['w'], crop_pos['h']))
+                instance.label_status.configure(text="[x] スプライトの画像 [{}] を一時フォルダに保存できませんでした。例外: {}".format(i, e))
+                array_failed.append(i)
+                continue
             print("Saved: {}".format(path_out))
 
-    instance.label_status.configure(text="[o] スプライトの画像を一時フォルダに保存しました。")
+    if not array_failed:
+        instance.label_status.configure(text="[o] スプライトの画像を一時フォルダに保存しました。")
+    else:
+        instance.label_status.configure(text="[x] 一部のスプライトの画像を一時フォルダに保存できませんでした。{}".format(", ".join(array_failed)))
+        messagebox.showerror("エラー", "次のスプライトの画像を一時フォルダに保存できませんでした。\n{}\nこれらのスプライトは表示されませんが、処理を続行します。".format("\n".join(array_failed)))
     IS_SEPARATED = True
 
 def name_to_guid(name):
@@ -138,6 +150,7 @@ def combine_parts_to_image(list_parts):
             part.replace(".asset", ".png"))
 
         pos = prefab.get_pos_world_from_guid(name_to_guid(part))
+        
         image = PIL.Image.open(path_img).convert("RGBA")
 
         center_x = pos['x']

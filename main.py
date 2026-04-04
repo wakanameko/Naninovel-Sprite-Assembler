@@ -17,7 +17,7 @@ import configure
 ##########
 # initialize
 APPNAME = "Naninovel Sprite Assembler"
-VERSION = "1.0"
+VERSION = "1.1"
 DEVELOPER = "wakanameko"
 SRC_DIR = os.path.dirname(__file__)
 FONT = "system-ui"
@@ -89,7 +89,7 @@ def setup_widgets():
     app.label_status.pack(fill="both", anchor=ctk.N, padx=(5, 5))
 
 def quit_thisAPP(event=None):
-    # settings.writeSettingFile(app, path_setting_ini, mode="save")
+    settings.writeSettingFile(app, path_setting_ini, mode="save")
     app.destroy()
     shutil.rmtree(Path(SRC_DIR, "tmp"), ignore_errors=True)
     os.mkdir(Path(SRC_DIR, "tmp"))
@@ -134,7 +134,7 @@ class App(ctk.CTk):
         except TypeError:
             settings.writeSettingFile(ctk, path_setting_ini)
             self.geometry("{}x{}".format(self.size_window_x, self.size_window_y))
-
+        
 # initialize main window
 app = App()
 # 外観を指定
